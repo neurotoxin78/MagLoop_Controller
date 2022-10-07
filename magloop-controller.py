@@ -1,11 +1,12 @@
 import gc
-import sys
 import json as jconf
+import sys
+from time import sleep
+
 import requests
 from PyQt6 import QtCore, QtWidgets, uic
-from PyQt6.QtGui import QStandardItemModel
 from PyQt6.QtCore import Qt
-from time import sleep
+from PyQt6.QtGui import QStandardItemModel
 from rich.console import Console
 
 con = Console()
@@ -86,6 +87,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bandTreeViewConfig()
         self.load_bandTree()
         self.autoconnect()
+
     def initUI(self):
         self.upButton.clicked.connect(self.upButton_click)
         self.downButton.clicked.connect(self.downButton_click)
@@ -99,16 +101,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.relay1checkBox.toggled.connect(self.set_relay)
         self.comboInit()
         con.log(F"UI Initialized")
+
     def set_relay(self):
         if self.connected:
             self.relay = self.relay1checkBox.isChecked()
             if self.relay:
                 json = {'switch': "0"}
-                #self.relay = True
+                # self.relay = True
             else:
                 json = {'switch': "1"}
-                #self.relay = False
-            resp = requests.post(self.url + self.api_relay, json=json)
+                # self.relay = False
+            resp = requests.post(self.url + self.api_relay, json = json)
             json = resp.json()
             if 'status' in json:
                 stat = json["status"]
@@ -150,7 +153,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if "bands" in config:
             bands = config["bands"]
             for key in bands:
-                self.addTreeItem(self.model, bands[key]['band'], bands[key]['step'], bands[key]['relay'], bands[key]['desc'])
+                self.addTreeItem(
+                    self.model, bands[key]['band'], bands[key]['step'], bands[key]['relay'], bands[key]['desc']
+                    )
         else:
             raise KeyError("Error: Key 'bands' not found in config file.")
 
@@ -173,8 +178,10 @@ class MainWindow(QtWidgets.QMainWindow):
             jconf.dump(d_dict, fp)
 
     def store_defaults(self):
-        defaults = {"defaults": {"step": self.step, "speed": self.speed, "autoconnect": self.autocon, "relay": self.relay}}
-        defaults = jconf.dumps(defaults, indent=4)
+        defaults = {
+            "defaults": {"step": self.step, "speed": self.speed, "autoconnect": self.autocon, "relay": self.relay}
+            }
+        defaults = jconf.dumps(defaults, indent = 4)
         jsondefs = jconf.loads(defaults)
         try:
             with open("defaults.json", "w") as f:
@@ -241,8 +248,6 @@ class MainWindow(QtWidgets.QMainWindow):
         model.setData(model.index(0, self.DESCRIPTION), desc)
         con.log(F"Added items Band: {band}, Step : {steps}, Relay : {relay} Description: {desc}")
 
-
-
     def deleteButton_click(self):
         indices = self.bandtreeView.selectionModel().selectedRows()
         for index in sorted(indices):
@@ -293,7 +298,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     sleep(0.1)
                     self.current_position = int(self.current_position_label.text())
 
-
     def getValue(self, value):
         self.current_treeIndex = value
 
@@ -323,13 +327,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def mainTimer():
         gc.collect()
         mem = gc.get_stats()
-        con.log("Garbage collect", justify="center")
+        con.log("Garbage collect", justify = "center")
         con.print(mem)
 
     def moveTo(self, direction, step, speed):
         if self.connected:
             json = {'dir': direction, 'step': step, 'speed': speed}
-            resp = requests.post(self.url + self.api_move, json=json)
+            resp = requests.post(self.url + self.api_move, json = json)
             json = resp.json()
             if 'step_count' in json:
                 self.current_position_label.setText(str(json['step_count']))
