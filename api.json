@@ -1,0 +1,10 @@
+{
+    "api": {
+        "url": "http://10.175.1.15:8080",
+        "settings" : "/settings",
+        "move" : "/move",
+        "park" : "/park",
+        "status" : "/status",
+        "relay" : "/relay"
+    }
+}
