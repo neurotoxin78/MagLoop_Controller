@@ -1,1 +1,1 @@
-{"defaults": {"step": "100", "speed": "15", "autoconnect": true, "relay": false}}
+{"defaults": {"step": "500", "speed": "15", "autoconnect": true, "relay1": false, "relay2": false, "relay3": false, "relay4": false}}

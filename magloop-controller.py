@@ -8,6 +8,9 @@ from PyQt6 import QtCore, QtWidgets, uic
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QStandardItemModel
 from rich.console import Console
+from pympler import muppy
+from pympler import summary, asizeof
+
 
 con = Console()
 
@@ -94,11 +97,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.url = None
         self.autocon = False
         self.current_treeIndex = 0
+        self.all_objects = muppy.get_objects()
         self.initUI()
         self.configure()
         self.bandTreeViewConfig()
         self.load_bandTree()
         self.autoconnect()
+
 
     def initUI(self):
         self.upButton.clicked.connect(self.upButton_click)
@@ -228,7 +233,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def store_defaults(self):
         defaults = {
-            "defaults": {"step": self.step, "speed": self.speed, "autoconnect": self.autocon, "relay": self.relay}
+            "defaults": {"step": self.step, "speed": self.speed, "autoconnect": self.autocon, "relay1": self.relay1, "relay2": self.relay2, "relay3": self.relay3, "relay4": self.relay4}
             }
         defaults = jconf.dumps(defaults, indent = 4)
         jsondefs = jconf.loads(defaults)
@@ -256,7 +261,10 @@ class MainWindow(QtWidgets.QMainWindow):
             d = defaults["defaults"]
             self.step = d["step"]
             self.speed = d["speed"]
-            self.relay = d["relay"]
+            self.relay1 = d["relay1"]
+            self.relay2 = d["relay2"]
+            self.relay3 = d["relay3"]
+            self.relay4 = d["relay4"]
             step_index = self.step_comboBox.findText(self.step)
             self.step_comboBox.setCurrentIndex(step_index)
             speed_index = self.speed_comboBox.findText(self.speed)
@@ -264,12 +272,26 @@ class MainWindow(QtWidgets.QMainWindow):
             con.log(F"Autoconnect: {bool(d['autoconnect'])}")
             if bool(d['autoconnect']):
                 self.autoConCheckBox.setChecked(True)
-            if bool(d['relay']):
+            if bool(d['relay1']):
                 self.relay1checkBox.setChecked(True)
                 self.relay1_status_label.setText(F"1: ON")
+                self.switch_relay_1()
+            if bool(d['relay2']):
+                self.relay2checkBox.setChecked(True)
+                self.relay2_status_label.setText(F"2: ON")
+                self.switch_relay_2()
+            if bool(d['relay3']):
+                self.relay3checkBox.setChecked(True)
+                self.relay3_status_label.setText(F"3: ON")
+                self.switch_relay_3()
+            if bool(d['relay4']):
+                self.relay4checkBox.setChecked(True)
+                self.relay4_status_label.setText(F"4: ON")
+                self.switch_relay_4()
             con.log(F"Loaded defaults")
         else:
             raise KeyError("Error: Key 'defaults' not found in config file.")
+        self.mainTimer()
 
     def bandTreeViewConfig(self):
         self.bandtreeView.setRootIsDecorated(False)
@@ -277,13 +299,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model = self.createBandTreeModel(self)
         self.bandtreeView.setModel(self.model)
         self.bandtreeView.setSortingEnabled(True)
-        self.bandtreeView.setColumnWidth(0, 100)
+        self.bandtreeView.setColumnWidth(0, 160)
         self.bandtreeView.setColumnWidth(1, 60)
-        self.bandtreeView.setColumnWidth(2, 35)
-        self.bandtreeView.setColumnWidth(3, 35)
-        self.bandtreeView.setColumnWidth(4, 35)
-        self.bandtreeView.setColumnWidth(5, 35)
-        self.bandtreeView.setColumnWidth(6, 100)
+        self.bandtreeView.setColumnWidth(2, 40)
+        self.bandtreeView.setColumnWidth(3, 40)
+        self.bandtreeView.setColumnWidth(4, 40)
+        self.bandtreeView.setColumnWidth(5, 40)
+        self.bandtreeView.setColumnWidth(6, 160)
 
     def createBandTreeModel(self, parent):
         model = QStandardItemModel(0, 7, parent)
@@ -383,12 +405,15 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.statusbar.showMessage("Не з'єднано")
 
-    @staticmethod
-    def mainTimer():
+    def mainTimer(self):
         gc.collect()
         mem = gc.get_stats()
         con.log("Garbage collect", justify = "center")
         con.print(mem)
+        # suma = summary.summarize(self.all_objects)
+        total = summary.getsizeof(self.all_objects)
+        # summary.print_(suma)
+        con.out(F"{total} Mb")
 
     def moveTo(self, direction, step, speed):
         if self.connected:

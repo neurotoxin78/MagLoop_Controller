@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
+    <width>600</width>
     <height>600</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>500</width>
+    <width>600</width>
     <height>600</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>500</width>
+    <width>600</width>
     <height>600</height>
    </size>
   </property>
@@ -99,14 +99,14 @@
        <item row="6" column="2">
         <widget class="QCheckBox" name="relay3checkBox">
          <property name="text">
-          <string>Реле 3</string>
+          <string>+Ємність</string>
          </property>
         </widget>
        </item>
        <item row="6" column="3">
         <widget class="QCheckBox" name="relay4checkBox">
          <property name="text">
-          <string>Реле 4</string>
+          <string>+Індуктивність</string>
          </property>
         </widget>
        </item>
@@ -136,14 +136,21 @@
        <item row="6" column="1">
         <widget class="QCheckBox" name="relay2checkBox">
          <property name="text">
-          <string>Реле 2</string>
+          <string>+ Ємність</string>
          </property>
         </widget>
        </item>
        <item row="6" column="0">
         <widget class="QCheckBox" name="relay1checkBox">
          <property name="text">
-          <string>Реле 1</string>
+          <string>+ Індуктивність</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="parkButton">
+         <property name="text">
+          <string>Паркувати</string>
          </property>
         </widget>
        </item>
@@ -220,13 +227,6 @@
         <widget class="QCheckBox" name="autoConCheckBox">
          <property name="text">
           <string>Автоз'єднання</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QPushButton" name="parkButton">
-         <property name="text">
-          <string>Паркувати</string>
          </property>
         </widget>
        </item>
