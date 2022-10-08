@@ -2,7 +2,7 @@ import gc
 import json as jconf
 import sys
 from time import sleep
-
+from functools import wraps
 import requests
 from PyQt6 import QtCore, QtWidgets, uic
 from PyQt6.QtCore import Qt
@@ -44,7 +44,7 @@ class AddDialog(QtWidgets.QDialog):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    BAND, STEPS, RELAY, DESCRIPTION = range(4)
+    BAND, STEPS, RELAY1, RELAY2, RELAY3, RELAY4, DESCRIPTION = range(7)
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
@@ -71,7 +71,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connected = False
         self.direction = None
         self.step = None
-        self.relay = True
+        self.relay1 = True
+        self.relay2 = True
+        self.relay3 = True
+        self.relay4 = True
         self.speed = None
         self.current_position = None
         self.max_position = None
@@ -98,24 +101,55 @@ class MainWindow(QtWidgets.QMainWindow):
         self.runButton.clicked.connect(self.runButton_click)
         self.deleteButton.clicked.connect(self.deleteButton_click)
         self.autoConCheckBox.toggled.connect(self.set_autoconnect)
-        self.relay1checkBox.toggled.connect(self.set_relay)
+        self.relay1checkBox.toggled.connect(self.switch_relay_1)
+        self.relay2checkBox.toggled.connect(self.switch_relay_2)
+        self.relay3checkBox.toggled.connect(self.switch_relay_3)
+        self.relay4checkBox.toggled.connect(self.switch_relay_4)
         self.comboInit()
         con.log(F"UI Initialized")
 
-    def set_relay(self):
+    def switch_relay_1(self):
+        self.set_relay("1", self.relay1checkBox.isChecked())
+        self.relay1 = self.relay1checkBox.isChecked()
+
+    def switch_relay_2(self):
+        self.set_relay("2", self.relay2checkBox.isChecked())
+        self.relay2 = self.relay1checkBox.isChecked()
+
+    def switch_relay_3(self):
+        self.set_relay("3", self.relay3checkBox.isChecked())
+        self.relay3 = self.relay1checkBox.isChecked()
+
+    def switch_relay_4(self):
+        self.set_relay("4", self.relay4checkBox.isChecked())
+        self.relay4 = self.relay1checkBox.isChecked()
+
+    def set_relay(self, num: str, sw: bool):
         if self.connected:
-            self.relay = self.relay1checkBox.isChecked()
-            if self.relay:
-                json = {'switch': "0"}
+            if sw:
+                json = {'switch': "0", 'num': f'{str(num)}'}
                 # self.relay = True
             else:
-                json = {'switch': "1"}
+                json = {'switch': "1", 'num': f'{str(num)}'}
                 # self.relay = False
             resp = requests.post(self.url + self.api_relay, json = json)
             json = resp.json()
             if 'status' in json:
                 stat = json["status"]
-                self.relay1_status_label.setText(F"1: {stat}")
+                switch_state = json["switch_state"]
+                match int(num):
+                    case 1:
+                        self.relay1_status_label.setText(F"1:{stat}")
+                        con.log(F"1:{switch_state}")
+                    case 2:
+                        self.relay2_status_label.setText(F"2:{stat}")
+                        con.log(F"2:{switch_state}")
+                    case 3:
+                        self.relay3_status_label.setText(F"3:{stat}")
+                        con.log(F"3:{switch_state}")
+                    case 4:
+                        self.relay4_status_label.setText(F"4:{stat}")
+                        con.log(F"4:{switch_state}")
             # if 'status' in json:
             #     self.status_label.setText(F"Статус: {json['status']}")
 
@@ -154,7 +188,7 @@ class MainWindow(QtWidgets.QMainWindow):
             bands = config["bands"]
             for key in bands:
                 self.addTreeItem(
-                    self.model, bands[key]['band'], bands[key]['step'], bands[key]['relay'], bands[key]['desc']
+                    self.model, bands[key]['band'], bands[key]['step'], bands[key]['relay1'], bands[key]['relay2'], bands[key]['relay3'], bands[key]['relay4'], bands[key]['desc']
                     )
         else:
             raise KeyError("Error: Key 'bands' not found in config file.")
@@ -171,8 +205,14 @@ class MainWindow(QtWidgets.QMainWindow):
                     case 1:
                         d_dict['bands'][row]['step'] = str(self.model.data(index))
                     case 2:
-                        d_dict['bands'][row]['relay'] = bool(self.model.data(index))
+                        d_dict['bands'][row]['relay1'] = bool(self.model.data(index))
                     case 3:
+                        d_dict['bands'][row]['relay2'] = bool(self.model.data(index))
+                    case 4:
+                        d_dict['bands'][row]['relay3'] = bool(self.model.data(index))
+                    case 5:
+                        d_dict['bands'][row]['relay4'] = bool(self.model.data(index))
+                    case 6:
                         d_dict['bands'][row]['desc'] = str(self.model.data(index))
         with open("bands.json", "w") as fp:
             jconf.dump(d_dict, fp)
@@ -228,25 +268,36 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model = self.createBandTreeModel(self)
         self.bandtreeView.setModel(self.model)
         self.bandtreeView.setSortingEnabled(True)
-        self.bandtreeView.setColumnWidth(0, 85)
-        self.bandtreeView.setColumnWidth(1, 50)
-        self.bandtreeView.setColumnWidth(2, 50)
+        self.bandtreeView.setColumnWidth(0, 50)
+        self.bandtreeView.setColumnWidth(1, 40)
+        self.bandtreeView.setColumnWidth(2, 20)
+        self.bandtreeView.setColumnWidth(3, 20)
+        self.bandtreeView.setColumnWidth(4, 20)
+        self.bandtreeView.setColumnWidth(5, 20)
+        self.bandtreeView.setColumnWidth(6, 80)
 
     def createBandTreeModel(self, parent):
-        model = QStandardItemModel(0, 4, parent)
+        model = QStandardItemModel(0, 7, parent)
         model.setHeaderData(self.BAND, Qt.Orientation.Horizontal, "Діапазон")
         model.setHeaderData(self.STEPS, Qt.Orientation.Horizontal, "Кроки")
-        model.setHeaderData(self.RELAY, Qt.Orientation.Horizontal, "Реле")
+        model.setHeaderData(self.RELAY1, Qt.Orientation.Horizontal, "1")
+        model.setHeaderData(self.RELAY2, Qt.Orientation.Horizontal, "2")
+        model.setHeaderData(self.RELAY3, Qt.Orientation.Horizontal, "3")
+        model.setHeaderData(self.RELAY4, Qt.Orientation.Horizontal, "4")
         model.setHeaderData(self.DESCRIPTION, Qt.Orientation.Horizontal, "Опис")
         return model
 
-    def addTreeItem(self, model, band, steps, relay, desc):
+    def addTreeItem(self, model, band, steps, relay1, relay2, relay3, relay4, desc):
         model.insertRow(0)
         model.setData(model.index(0, self.BAND), band)
         model.setData(model.index(0, self.STEPS), steps)
-        model.setData(model.index(0, self.RELAY), relay)
+        model.setData(model.index(0, self.RELAY1), relay1)
+        model.setData(model.index(0, self.RELAY2), relay2)
+        model.setData(model.index(0, self.RELAY3), relay3)
+        model.setData(model.index(0, self.RELAY4), relay4)
         model.setData(model.index(0, self.DESCRIPTION), desc)
-        con.log(F"Added items Band: {band}, Step : {steps}, Relay : {relay} Description: {desc}")
+        con.log(F"Added items Band: {band}, Step : {steps}, Relay1 : {relay1}, Relay2 : {relay2}, Relay3 : {relay3}, "
+                F"Relay4 : {relay4}, Description: {desc}")
 
     def deleteButton_click(self):
         indices = self.bandtreeView.selectionModel().selectedRows()
