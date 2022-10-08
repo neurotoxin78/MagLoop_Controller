@@ -27,20 +27,29 @@ class AddDialog(QtWidgets.QDialog):
         self.steplineEdit = None
         self.bandlineEdit = None
         self.relay1checkBox = None
+        self.relay2checkBox = None
+        self.relay3checkBox = None
+        self.relay4checkBox = None
         uic.loadUi('add_dialog.ui', self)
 
-    def set_fields_values(self, band, step, relay, desc):
+    def set_fields_values(self, band, step, relay1, relay2, relay3, relay4, desc):
         self.bandlineEdit.setText(band)
         self.steplineEdit.setText(step)
         self.desclineEdit.setText(desc)
-        self.relay1checkBox.setChecked(bool(relay))
+        self.relay1checkBox.setChecked(bool(relay1))
+        self.relay2checkBox.setChecked(bool(relay2))
+        self.relay3checkBox.setChecked(bool(relay3))
+        self.relay4checkBox.setChecked(bool(relay4))
 
     def get_fields_values(self):
         band = self.bandlineEdit.text()
         step = self.steplineEdit.text()
         desc = self.desclineEdit.text()
-        relay = self.relay1checkBox.isChecked()
-        return {"band": band, "step": step, "relay": relay, "desc": desc}
+        relay1 = self.relay1checkBox.isChecked()
+        relay2 = self.relay2checkBox.isChecked()
+        relay3 = self.relay3checkBox.isChecked()
+        relay4 = self.relay4checkBox.isChecked()
+        return {"band": band, "step": step, "relay1": relay1, "relay2": relay2, "relay3": relay3, "relay4": relay4, "desc": desc}
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -71,10 +80,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connected = False
         self.direction = None
         self.step = None
-        self.relay1 = True
-        self.relay2 = True
-        self.relay3 = True
-        self.relay4 = True
+        self.relay1 = False
+        self.relay2 = False
+        self.relay3 = False
+        self.relay4 = False
         self.speed = None
         self.current_position = None
         self.max_position = None
@@ -114,15 +123,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def switch_relay_2(self):
         self.set_relay("2", self.relay2checkBox.isChecked())
-        self.relay2 = self.relay1checkBox.isChecked()
+        self.relay2 = self.relay2checkBox.isChecked()
 
     def switch_relay_3(self):
         self.set_relay("3", self.relay3checkBox.isChecked())
-        self.relay3 = self.relay1checkBox.isChecked()
+        self.relay3 = self.relay3checkBox.isChecked()
 
     def switch_relay_4(self):
         self.set_relay("4", self.relay4checkBox.isChecked())
-        self.relay4 = self.relay1checkBox.isChecked()
+        self.relay4 = self.relay4checkBox.isChecked()
 
     def set_relay(self, num: str, sw: bool):
         if self.connected:
@@ -268,13 +277,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model = self.createBandTreeModel(self)
         self.bandtreeView.setModel(self.model)
         self.bandtreeView.setSortingEnabled(True)
-        self.bandtreeView.setColumnWidth(0, 50)
-        self.bandtreeView.setColumnWidth(1, 40)
-        self.bandtreeView.setColumnWidth(2, 20)
-        self.bandtreeView.setColumnWidth(3, 20)
-        self.bandtreeView.setColumnWidth(4, 20)
-        self.bandtreeView.setColumnWidth(5, 20)
-        self.bandtreeView.setColumnWidth(6, 80)
+        self.bandtreeView.setColumnWidth(0, 100)
+        self.bandtreeView.setColumnWidth(1, 60)
+        self.bandtreeView.setColumnWidth(2, 35)
+        self.bandtreeView.setColumnWidth(3, 35)
+        self.bandtreeView.setColumnWidth(4, 35)
+        self.bandtreeView.setColumnWidth(5, 35)
+        self.bandtreeView.setColumnWidth(6, 100)
 
     def createBandTreeModel(self, parent):
         model = QStandardItemModel(0, 7, parent)
@@ -353,11 +362,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.current_treeIndex = value
 
     def addButton_click(self):
-        self.add_dialog.set_fields_values("Діапазон", self.current_position_label.text(), self.relay, "")
+        self.add_dialog.set_fields_values("Діапазон", self.current_position_label.text(), self.relay1, self.relay2, self.relay3, self.relay4, "")
         answer = self.add_dialog.exec()
         if answer:
             values = self.add_dialog.get_fields_values()
-            self.addTreeItem(self.model, values['band'], values['step'], bool(values['relay']), values['desc'])
+            self.addTreeItem(self.model, values['band'], values['step'], bool(values['relay1']), bool(values['relay2']), bool(values['relay3']), bool(values['relay4']), values['desc'])
         else:
             con.log("Cancel")
 
