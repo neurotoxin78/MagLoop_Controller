@@ -1,15 +1,19 @@
 import gc
 import json as jconf
 import sys
+from pathlib import Path
 from time import sleep
-from functools import wraps
+
 import requests
-from PyQt6 import QtCore, QtWidgets, uic
+from PyQt6 import QtCore
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import QFile
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QStandardItemModel
-from rich.console import Console
+from PyQt6.uic import loadUi
 from pympler import muppy
-from pympler import summary, asizeof
+from pympler import summary
+from rich.console import Console
 
 con = Console()
 
@@ -32,9 +36,20 @@ class AddDialog(QtWidgets.QDialog):
         self.relay2checkBox = None
         self.relay3checkBox = None
         self.relay4checkBox = None
-        uic.loadUi('add_dialog.ui', self)
+        # loadUi('add_dialog.ui', self)
+        self.load_ui()
+        self.setWindowTitle("Додати")
+        self.setStylesheet("stylesheets/cap_control.qss")
 
-    def set_fields_values(self, band: str, step: int, relay1: bool, relay2: bool, relay3: bool, relay4: bool, desc: str):
+    def load_ui(self):
+        path = Path(__file__).resolve().parent / "ui/add_dialog.ui"
+        ui_file = QFile(str(path))
+        ui_file.open(QFile.OpenModeFlag.ReadOnly)
+        loadUi(ui_file, self)
+        ui_file.close()
+
+    def set_fields_values(self, band: str, step: int, relay1: bool, relay2: bool, relay3: bool, relay4: bool,
+                          desc: str):
         self.bandlineEdit.setText(band)
         self.steplineEdit.setText(step)
         self.desclineEdit.setText(desc)
@@ -56,6 +71,10 @@ class AddDialog(QtWidgets.QDialog):
             "desc": desc
             }
 
+    def setStylesheet(self, filename):
+        with open(filename, "r") as fh:
+            self.setStyleSheet(fh.read())
+
 
 class MainWindow(QtWidgets.QMainWindow):
     BAND, STEPS, RELAY1, RELAY2, RELAY3, RELAY4, DESCRIPTION = range(7)
@@ -63,7 +82,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         # Load the UI Page
-        uic.loadUi('ui.ui', self)
+        # loadUi('ui.ui', self)
+        self.load_ui()
         self.status_label = QtWidgets.QLabel("Статус: ")
         self.relay1_status_label = QtWidgets.QLabel("1:OFF")
         self.relay2_status_label = QtWidgets.QLabel("2:OFF")
@@ -105,6 +125,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bandTreeViewConfig()
         self.load_bandTree()
         self.autoconnect()
+
+    def load_ui(self):
+        path = Path(__file__).resolve().parent / "ui/ui.ui"
+        ui_file = QFile(str(path))
+        ui_file.open(QFile.OpenModeFlag.ReadOnly)
+        loadUi(ui_file, self)
+        ui_file.close()
 
     def initUI(self):
         self.upButton.clicked.connect(self.upButton_click)
@@ -438,7 +465,7 @@ class MainWindow(QtWidgets.QMainWindow):
         gc.collect()
         mem = gc.get_stats()
         con.log("Garbage collect", justify = "center")
-        con.print(mem)
+        con.log(f"{mem}")
         # suma = summary.summarize(self.all_objects)
         total = summary.getsizeof(self.all_objects)
         # summary.print_(suma)
