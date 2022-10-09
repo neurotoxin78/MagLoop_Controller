@@ -119,7 +119,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.relay3checkBox.toggled.connect(self.switch_relay_3)
         self.relay4checkBox.toggled.connect(self.switch_relay_4)
         self.comboInit()
+        self.setButtons(False)
         con.log(F"UI Initialized")
+
+    def setButtons(self, state: bool) -> None:
+        self.upButton.setEnabled(state)
+        self.downButton.setEnabled(state)
+        self.parkButton.setEnabled(state)
+        self.runButton.setEnabled(state)
+
 
     def switch_relay_1(self):
         self.set_relay("1", self.relay1checkBox.isChecked())
@@ -476,10 +484,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if 'ip' in json:
             self.statusbar.showMessage("З'єднано")
             self.connected = True
+            self.setButtons(True)
             self.get_info()
         else:
             self.statusbar.showMessage("Error: No API found, check URI")
             self.connected = False
+            self.setButtons(False)
 
     def closeEvent(self, event):
         con.log("[green]Closing[/]")
