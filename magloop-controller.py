@@ -340,28 +340,24 @@ class MainWindow(QtWidgets.QMainWindow):
                 output.append(row_data)
             # Set Relays State
             if bool(output[0][2]):
-                # print(output[0][2])
                 self.relay1checkBox.setChecked(True)
                 self.set_relay("1", True)
             else:
                 self.relay1checkBox.setChecked(False)
                 self.set_relay("1", False)
             if bool(output[0][3]):
-                # print(output[0][2])
                 self.relay2checkBox.setChecked(True)
                 self.set_relay("2", True)
             else:
                 self.relay2checkBox.setChecked(False)
                 self.set_relay("2", False)
             if bool(output[0][4]):
-                # print(output[0][2])
                 self.relay3checkBox.setChecked(True)
                 self.set_relay("3", True)
             else:
                 self.relay3checkBox.setChecked(False)
                 self.set_relay("3", False)
             if bool(output[0][5]):
-                # print(output[0][2])
                 self.relay4checkBox.setChecked(True)
                 self.set_relay("4", True)
             else:
