@@ -148,23 +148,17 @@ class MainWindow(QtWidgets.QMainWindow):
             resp = requests.post(self.url + self.api_relay, json = json)
             json = resp.json()
             if 'status' in json:
-                stat = json["status"]
-                switch_state = json["switch_state"]
+                # stat = json["status"]
                 match int(num):
                     case 1:
-                        self.relay1_status_label.setText(F"1:{stat}")
-                        con.log(F"1:{switch_state}")
+                        self.relay1_status_label.setText(F"1:{json['status']}")
                     case 2:
-                        self.relay2_status_label.setText(F"2:{stat}")
-                        con.log(F"2:{switch_state}")
+                        self.relay2_status_label.setText(F"2:{json['status']}")
                     case 3:
-                        self.relay3_status_label.setText(F"3:{stat}")
-                        con.log(F"3:{switch_state}")
+                        self.relay3_status_label.setText(F"3:{json['status']}")
                     case 4:
-                        self.relay4_status_label.setText(F"4:{stat}")
-                        con.log(F"4:{switch_state}")
-            # if 'status' in json:
-            #     self.status_label.setText(F"Статус: {json['status']}")
+                        self.relay4_status_label.setText(F"4:{json['status']}")
+
 
     def autoconnect(self):
         self.autocon = self.autoConCheckBox.isChecked()
@@ -344,14 +338,35 @@ class MainWindow(QtWidgets.QMainWindow):
                     index = self.bandtreeView.model().index(row, column)
                     row_data.append(index.data())
                 output.append(row_data)
-            # Set Relay State
+            # Set Relays State
             if bool(output[0][2]):
                 # print(output[0][2])
                 self.relay1checkBox.setChecked(True)
-                self.set_relay()
+                self.set_relay("1", True)
             else:
                 self.relay1checkBox.setChecked(False)
-                self.set_relay()
+                self.set_relay("1", False)
+            if bool(output[0][3]):
+                # print(output[0][2])
+                self.relay2checkBox.setChecked(True)
+                self.set_relay("2", True)
+            else:
+                self.relay2checkBox.setChecked(False)
+                self.set_relay("2", False)
+            if bool(output[0][4]):
+                # print(output[0][2])
+                self.relay3checkBox.setChecked(True)
+                self.set_relay("3", True)
+            else:
+                self.relay3checkBox.setChecked(False)
+                self.set_relay("3", False)
+            if bool(output[0][5]):
+                # print(output[0][2])
+                self.relay4checkBox.setChecked(True)
+                self.set_relay("4", True)
+            else:
+                self.relay4checkBox.setChecked(False)
+                self.set_relay("4", False)
             # Move Action
             if self.current_position == 0:
                 con.log(f"Move from 0 to {output[0][1]}")
