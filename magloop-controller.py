@@ -11,7 +11,6 @@ from rich.console import Console
 from pympler import muppy
 from pympler import summary, asizeof
 
-
 con = Console()
 
 
@@ -35,7 +34,7 @@ class AddDialog(QtWidgets.QDialog):
         self.relay4checkBox = None
         uic.loadUi('add_dialog.ui', self)
 
-    def set_fields_values(self, band, step, relay1, relay2, relay3, relay4, desc):
+    def set_fields_values(self, band: str, step: int, relay1: bool, relay2: bool, relay3: bool, relay4: bool, desc: str):
         self.bandlineEdit.setText(band)
         self.steplineEdit.setText(step)
         self.desclineEdit.setText(desc)
@@ -52,7 +51,10 @@ class AddDialog(QtWidgets.QDialog):
         relay2 = self.relay2checkBox.isChecked()
         relay3 = self.relay3checkBox.isChecked()
         relay4 = self.relay4checkBox.isChecked()
-        return {"band": band, "step": step, "relay1": relay1, "relay2": relay2, "relay3": relay3, "relay4": relay4, "desc": desc}
+        return {
+            "band": band, "step": step, "relay1": relay1, "relay2": relay2, "relay3": relay3, "relay4": relay4,
+            "desc": desc
+            }
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -80,22 +82,22 @@ class MainWindow(QtWidgets.QMainWindow):
         self.main_Timer.timeout.connect(self.mainTimer)
         self.main_Timer.start(60000)
         # Variables
-        self.connected = False
+        self.connected: bool = False
         self.direction = None
-        self.step = None
-        self.relay1 = False
-        self.relay2 = False
-        self.relay3 = False
-        self.relay4 = False
-        self.speed = None
-        self.current_position = None
-        self.max_position = None
-        self.api_status = None
-        self.api_park = None
-        self.api_move = None
-        self.api_relay = None
-        self.url = None
-        self.autocon = False
+        self.step: int = 0
+        self.relay1: bool = False
+        self.relay2: bool = False
+        self.relay3: bool = False
+        self.relay4: bool = False
+        self.speed: int = 10
+        self.current_position: int | str = 0
+        self.max_position: int | str = 0
+        self.api_status: str = ""
+        self.api_park: str = ""
+        self.api_move: str = ""
+        self.api_relay: str = ""
+        self.url: str = ""
+        self.autoconect: bool = False
         self.current_treeIndex = 0
         self.all_objects = muppy.get_objects()
         self.initUI()
@@ -127,7 +129,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.downButton.setEnabled(state)
         self.parkButton.setEnabled(state)
         self.runButton.setEnabled(state)
-
 
     def switch_relay_1(self):
         self.set_relay("1", self.relay1checkBox.isChecked())
@@ -167,15 +168,14 @@ class MainWindow(QtWidgets.QMainWindow):
                     case 4:
                         self.relay4_status_label.setText(F"4:{json['status']}")
 
-
     def autoconnect(self):
-        self.autocon = self.autoConCheckBox.isChecked()
-        if self.autocon:
+        self.autoconect = self.autoConCheckBox.isChecked()
+        if self.autoconect:
             self.connectButton_click()
 
     def set_autoconnect(self):
-        self.autocon = self.autoConCheckBox.isChecked()
-        con.log(F"Set autoconnect: {self.autocon}")
+        self.autoconect = self.autoConCheckBox.isChecked()
+        con.log(F"Set autoconnect: {self.autoconect}")
 
     @staticmethod
     def connect(url):
@@ -203,7 +203,8 @@ class MainWindow(QtWidgets.QMainWindow):
             bands = config["bands"]
             for key in bands:
                 self.addTreeItem(
-                    self.model, bands[key]['band'], bands[key]['step'], bands[key]['relay1'], bands[key]['relay2'], bands[key]['relay3'], bands[key]['relay4'], bands[key]['desc']
+                    self.model, bands[key]['band'], bands[key]['step'], bands[key]['relay1'], bands[key]['relay2'],
+                    bands[key]['relay3'], bands[key]['relay4'], bands[key]['desc']
                     )
         else:
             raise KeyError("Error: Key 'bands' not found in config file.")
@@ -234,7 +235,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def store_defaults(self):
         defaults = {
-            "defaults": {"step": self.step, "speed": self.speed, "autoconnect": self.autocon, "relay1": self.relay1, "relay2": self.relay2, "relay3": self.relay3, "relay4": self.relay4}
+            "defaults": {
+                "step": self.step, "speed": self.speed, "autoconnect": self.autoconect, "relay1": self.relay1,
+                "relay2": self.relay2, "relay3": self.relay3, "relay4": self.relay4
+                }
             }
         defaults = jconf.dumps(defaults, indent = 4)
         jsondefs = jconf.loads(defaults)
@@ -328,8 +332,10 @@ class MainWindow(QtWidgets.QMainWindow):
         model.setData(model.index(0, self.RELAY3), relay3)
         model.setData(model.index(0, self.RELAY4), relay4)
         model.setData(model.index(0, self.DESCRIPTION), desc)
-        con.log(F"Added items Band: {band}, Step : {steps}, Relay1 : {relay1}, Relay2 : {relay2}, Relay3 : {relay3}, "
-                F"Relay4 : {relay4}, Description: {desc}")
+        con.log(
+            F"Added items Band: {band}, Step : {steps}, Relay1 : {relay1}, Relay2 : {relay2}, Relay3 : {relay3}, "
+            F"Relay4 : {relay4}, Description: {desc}"
+            )
 
     def deleteButton_click(self):
         indices = self.bandtreeView.selectionModel().selectedRows()
@@ -402,11 +408,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.current_treeIndex = value
 
     def addButton_click(self):
-        self.add_dialog.set_fields_values("Діапазон", self.current_position_label.text(), self.relay1, self.relay2, self.relay3, self.relay4, "")
+        self.add_dialog.set_fields_values(
+            "Діапазон", self.current_position_label.text(), self.relay1, self.relay2, self.relay3, self.relay4, ""
+            )
         answer = self.add_dialog.exec()
         if answer:
             values = self.add_dialog.get_fields_values()
-            self.addTreeItem(self.model, values['band'], values['step'], bool(values['relay1']), bool(values['relay2']), bool(values['relay3']), bool(values['relay4']), values['desc'])
+            self.addTreeItem(
+                self.model, values['band'], values['step'], bool(values['relay1']), bool(values['relay2']),
+                bool(values['relay3']), bool(values['relay4']), values['desc']
+                )
         else:
             con.log("Cancel")
 
@@ -431,7 +442,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # suma = summary.summarize(self.all_objects)
         total = summary.getsizeof(self.all_objects)
         # summary.print_(suma)
-        con.out(F"{total} Mb")
+        con.out(F"{total} bytes")
 
     def moveTo(self, direction, step, speed):
         if self.connected:
