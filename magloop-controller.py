@@ -104,7 +104,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.load_bandTree()
         self.autoconnect()
 
-
     def initUI(self):
         self.upButton.clicked.connect(self.upButton_click)
         self.downButton.clicked.connect(self.downButton_click)
