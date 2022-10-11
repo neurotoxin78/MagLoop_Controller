@@ -9,13 +9,14 @@ from PyQt6 import QtCore
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import QFile
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QStandardItemModel
+from PyQt6.QtGui import QStandardItemModel, QIcon
 from PyQt6.uic import loadUi
 from pympler import muppy
 from pympler import summary
 from rich.console import Console
 
 con = Console()
+degree_sign = u'\N{DEGREE SIGN}'
 
 
 def extended_exception_hook(exec_type, value, traceback):
@@ -26,9 +27,18 @@ def extended_exception_hook(exec_type, value, traceback):
     sys.exit(1)
 
 
+class Sensor():
+    temperature, humidity, pressure = range(3)
+
+    def __init__(self):
+        self.temperature = "NaN"
+        self.humidity = "NaN"
+        self.pressure = "NaN"
+
+
 class AddDialog(QtWidgets.QDialog):
     def __init__(self):
-        super().__init__()
+        super(AddDialog, self).__init__()
         self.desclineEdit = None
         self.steplineEdit = None
         self.bandlineEdit = None
@@ -96,11 +106,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusbar.addPermanentWidget(self.relay4_status_label)
         self.statusbar.reformat()
         self.setStylesheet("stylesheets/cap_control.qss")
+        self.setWindowIcon(QIcon('ui/capacitor-logo.png'))
         self.add_dialog = AddDialog()
         # Main Timer
         self.main_Timer = QtCore.QTimer()
         self.main_Timer.timeout.connect(self.mainTimer)
         self.main_Timer.start(60000)
+        # Sensor Timer
+        self.sensor = Sensor()
+        self.sensor_Timer = QtCore.QTimer()
+        self.sensor_Timer.timeout.connect(self.sensorTimer)
+        self.sensor_Timer.start(1000)
         # Variables
         self.connected: bool = False
         self.direction = None
@@ -117,6 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.api_move: str = ""
         self.api_relay: str = ""
         self.url: str = ""
+        self.api_sensor: str = ""
         self.autoconect: bool = False
         self.current_treeIndex = 0
         self.all_objects = muppy.get_objects()
@@ -125,6 +142,23 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bandTreeViewConfig()
         self.load_bandTree()
         self.autoconnect()
+
+    def sensorTimer(self):
+        if self.connected:
+            if self.sensor_groupBox.isChecked():
+                resp = requests.get(self.url + self.api_sensor)
+                json = resp.json()
+                if 'temperature' in json:
+                    self.sensor.temperature = f"{json['temperature']}{degree_sign}"
+                    self.temperature_label.setText(self.sensor.temperature)
+                if 'humidity' in json:
+                    self.sensor.humidity = f"{json['humidity']}%"
+                    self.humidity_label.setText(self.sensor.humidity)
+                if 'pressure' in json:
+                    self.sensor.pressure = f"{json['pressure']} mmHg"
+                    self.pressure_label.setText(self.sensor.pressure)
+        else:
+            self.statusbar.showMessage("Не з'єднано")
 
     def load_ui(self):
         path = Path(__file__).resolve().parent / "ui/ui.ui"
@@ -284,6 +318,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.api_park = api["park"]
             self.api_status = api["status"]
             self.api_relay = api["relay"]
+            self.api_sensor = api["sensor"]
             self.url_lineEdit.setText(self.url)
             con.log(F"Loaded API config")
         else:
@@ -333,10 +368,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.bandtreeView.setSortingEnabled(True)
         self.bandtreeView.setColumnWidth(0, 160)
         self.bandtreeView.setColumnWidth(1, 60)
-        self.bandtreeView.setColumnWidth(2, 40)
-        self.bandtreeView.setColumnWidth(3, 40)
-        self.bandtreeView.setColumnWidth(4, 40)
-        self.bandtreeView.setColumnWidth(5, 40)
+        self.bandtreeView.setColumnWidth(2, 45)
+        self.bandtreeView.setColumnWidth(3, 45)
+        self.bandtreeView.setColumnWidth(4, 45)
+        self.bandtreeView.setColumnWidth(5, 45)
         self.bandtreeView.setColumnWidth(6, 160)
 
     def createBandTreeModel(self, parent):
@@ -479,7 +514,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if 'step_count' in json:
                 self.current_position_label.setText(str(json['step_count']))
             if 'status' in json:
-                self.status_label.setText(F"Статус: {json['status']}")
+                self.status_label.setText(F"Статус: {json['status']} кроків виконано")
 
     def setStylesheet(self, filename):
         with open(filename, "r") as fh:
