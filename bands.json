@@ -1,1 +1,1 @@
-{"bands": {"0": {"band": "40M", "step": "2500", "relay1": true, "relay2": false, "relay3": false, "relay4": false, "desc": "7.000 -7.200 MHz"}, "1": {"band": "15M", "step": "300", "relay1": false, "relay2": true, "relay3": true, "relay4": false, "desc": "21.000 - 21.450 MHz"}}}
+{"bands": {"0": {"band": "15M", "step": "300", "relay1": true, "relay2": true, "relay3": true, "relay4": true, "desc": "21.000 - 21.450 MHz"}, "1": {"band": "40M", "step": "2500", "relay1": true, "relay2": false, "relay3": false, "relay4": false, "desc": "7.000 -7.200 MHz"}}}

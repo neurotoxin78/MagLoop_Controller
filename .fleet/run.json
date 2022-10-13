@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+          "type": "command",
+          "name": "RUN",
+          "program": "python.exe",
+          "args": ["magloop-controller.py"],
+        },
+
+    ]
+}

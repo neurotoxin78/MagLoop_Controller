@@ -116,7 +116,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sensor = Sensor()
         self.sensor_Timer = QtCore.QTimer()
         self.sensor_Timer.timeout.connect(self.sensorTimer)
-        self.sensor_Timer.start(1000)
+        self.sensor_Timer.start(10000)
         # Variables
         self.connected: bool = False
         self.direction = None
@@ -366,13 +366,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.model = self.createBandTreeModel(self)
         self.bandtreeView.setModel(self.model)
         self.bandtreeView.setSortingEnabled(True)
-        self.bandtreeView.setColumnWidth(0, 160)
+        self.bandtreeView.setColumnWidth(0, 120)
         self.bandtreeView.setColumnWidth(1, 60)
         self.bandtreeView.setColumnWidth(2, 45)
         self.bandtreeView.setColumnWidth(3, 45)
         self.bandtreeView.setColumnWidth(4, 45)
         self.bandtreeView.setColumnWidth(5, 45)
-        self.bandtreeView.setColumnWidth(6, 160)
+        self.bandtreeView.setColumnWidth(6, 120)
 
     def createBandTreeModel(self, parent):
         model = QStandardItemModel(0, 7, parent)
