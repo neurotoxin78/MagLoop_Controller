@@ -15,6 +15,7 @@ from pympler import muppy
 from pympler import summary
 from rich.console import Console
 
+
 con = Console()
 degree_sign = u'\N{DEGREE SIGN}'
 
@@ -116,7 +117,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.sensor = Sensor()
         self.sensor_Timer = QtCore.QTimer()
         self.sensor_Timer.timeout.connect(self.sensorTimer)
-        self.sensor_Timer.start(10000)
+        # self.sensor_Timer.start(10000)
         # Variables
         self.connected: bool = False
         self.direction = None
@@ -138,6 +139,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.current_treeIndex = 0
         self.all_objects = muppy.get_objects()
         self.initUI()
+        self.sensor_groupBox.hide()
         self.configure()
         self.bandTreeViewConfig()
         self.load_bandTree()

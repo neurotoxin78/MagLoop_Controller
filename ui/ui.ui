@@ -155,6 +155,7 @@
          <property name="font">
           <font>
            <pointsize>10</pointsize>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -249,7 +250,13 @@
      <widget class="QGroupBox" name="sensor_groupBox">
       <property name="minimumSize">
        <size>
-        <width>0</width>
+        <width>560</width>
+        <height>70</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>540</width>
         <height>70</height>
        </size>
       </property>
